@@ -1,18 +1,14 @@
 #include "Game.h"
 #include "TextureManager.h"
-#include "GameObject.h"
 #include "Map.h"
-#include "ECS.h"
 #include "Components.h"
 
-GameObject* player;
-GameObject* enemy;
 Map* map;
 
 SDL_Renderer* Game::renderer = nullptr;
 
 Manager manager;
-auto& newPlayer(manager.addEntity());
+auto& player(manager.addEntity());
 
 Game::Game() {
 
@@ -53,12 +49,11 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 		isRunning = false;
 	}
 
-	player = new GameObject("assets/supremeMan.png", 0, 0);
-	enemy = new GameObject("assets/enemy.png", 50, 50);
 	map = new Map();
+	// ECS implementacija
 
-	newPlayer.addComponent<PositionComponent>();
-	newPlayer.getComponent<PositionComponent>().setPos(500, 500);
+	player.addComponent<PositionComponent>(100, 500);
+	player.addComponent<SpriteComponents>("assets/supremeMan.png");
 }
 
 void Game::handleEvents() {
@@ -77,19 +72,21 @@ void Game::handleEvents() {
 
 void Game::update() {
 
-	player->update();
-	enemy->update();
 	manager.update();
-	cout << newPlayer.getComponent<PositionComponent>().x() << "," <<
-		newPlayer.getComponent<PositionComponent>().y() << "," << endl;
+	manager.refresh();
+
+	if (player.getComponent<PositionComponent>().x() > 100) {
+
+		player.getComponent<SpriteComponents>().setTex("assets/enemy.png");
+
+	}
 }
 
 void Game::render() {
 
 	SDL_RenderClear(renderer);
 	map->drawMap();
-	player->render();
-	enemy->render();
+	manager.draw();
 	//Tuki damo stvari za render
 	SDL_RenderPresent(renderer);
 
